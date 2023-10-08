@@ -1740,6 +1740,7 @@ router.get('/other/chatai2', async (req, res, next) => {
             model: 'gpt-3.5-turbo',
             messages,
             stream: true,
+            timeout: 60000,
         }, {
             headers: {
                 'Content-Type': 'application/json',
@@ -1785,10 +1786,19 @@ router.get('/other/chatai2', async (req, res, next) => {
         })
         });
     } catch (error) {
+        if (error.response && error.response.status === 503) {
+        // Tangani kesalahan "Service Unavailable" di sini
+        res.status(503).json({
+            error: 'Service Unavailable',
+            message: 'The service is currently unavailable. Please try again later.'
+        });
+    } else {
+        // Tangani kesalahan lainnya
         console.error('Error:', error.message);
         res.status(500).json({
             error: 'Internal Server Error'
         });
+    }
     }
     limitAdd(apikey);
 });
